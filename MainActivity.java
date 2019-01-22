@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private float y;
 
     private MyView mLineView;
+    private MyView2 mLineView2;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,9 +35,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mLineView = findViewById(R.id.lineView);
+        mLineView2 = findViewById(R.id.lineView2);
         mLineView.setPointA(pointA);
         mLineView.setPointB(pointB);
         mLineView.draw();
+        mLineView2.draw2();
 
         mLineView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if(event.getAction()==MotionEvent.ACTION_UP){
                     mLineView.draw();
+                    mLineView2.draw2();
                 }
                 return true; // Need return type signals event handled.
             }
@@ -89,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             String picturePath = cursor.getString(columnIndex);
             cursor.close();
 
-            ImageView imageView = findViewById(R.id.lineView);
+            ImageView imageView = findViewById(R.id.firstImage);
             ImageView imageView2 = findViewById(R.id.secondImage);
             File img = new File(picturePath);
             imageView.setImageBitmap(BitmapFactory.decodeFile(img.getAbsolutePath()));
