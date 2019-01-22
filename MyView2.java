@@ -44,6 +44,26 @@ public class MyView2 extends View {
     private Paint paint = new Paint();
     private PointF pointC, pointD;
 
+    public int getPointC(float x, float y){
+        int i = 0;
+        for(PointF p : pointListC){
+            if(p.x < x + 20 && p.x > x - 20)
+                if(p.y < y + 20 && p.y > y - 20)
+                    return i;
+            i++;
+        }
+        return -1;
+    }
+    public int getPointD(float x, float y){
+        int i = 0;
+        for(PointF p : pointListD){
+            if(p.x < x + 20 && p.x > x - 20)
+                if(p.y < y + 20 && p.y > y - 20)
+                    return i;
+            i++;
+        }
+        return -1;
+    }
     @Override
     protected void onDraw(Canvas canvas) {
 
@@ -54,6 +74,9 @@ public class MyView2 extends View {
         for(PointF p : pointListC){
             PointF m = pointListD.get(i);
             canvas.drawLine(p.x,p.y,m.x,m.y, paint);
+            paint.setTextSize(36);
+            canvas.drawText( i + "a", p.x - 10, p.y - 10, paint);
+            canvas.drawText(i + "b", m.x - 10, m.y - 10, paint);
             i++;
         }
 
@@ -68,6 +91,18 @@ public class MyView2 extends View {
     }
     public void setPointD(PointF point){
         pointD = point;
+    }
+    public void movePointC(PointF point, int i){
+        pointListC.set(i, point);
+    }
+    public void movePointD(PointF point, int i){
+        pointListD.set(i, point);
+    }
+
+    // Method empties arraylists
+    public void clearArray2(){
+        pointListC = new ArrayList<PointF>();
+        pointListD = new ArrayList<PointF>();
     }
     public void draw2(){
         invalidate();

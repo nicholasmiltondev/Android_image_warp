@@ -49,11 +49,17 @@ public class MyView extends View {
         for(PointF p : pointListA){
             PointF m = pointListB.get(i);
             canvas.drawLine(p.x,p.y,m.x,m.y, paint);
+            paint.setTextSize(36);
+            canvas.drawText( i + "a", p.x - 10, p.y - 10, paint);
+            canvas.drawText(i + "b", m.x - 10, m.y - 10, paint);
             i++;
         }
 
         // New points created on touch, draw
         canvas.drawLine(pointA.x,pointA.y,pointB.x,pointB.y, paint);
+        paint.setTextSize(36);
+        canvas.drawText( i + "a", pointA.x - 10, pointA.y - 10, paint);
+        canvas.drawText(i + "b", pointB.x - 10, pointB.y - 10, paint);
         // Then add them to the arraylists
         pointListA.add(pointA);
         pointListB.add(pointB);
@@ -69,6 +75,12 @@ public class MyView extends View {
     }
     public void setPointB(PointF point){
         pointB = point;
+    }
+
+    // Method empties arraylists
+    public void clearArray(){
+        pointListA = new ArrayList<PointF>();
+        pointListB = new ArrayList<PointF>();
     }
 
     public void draw(){
