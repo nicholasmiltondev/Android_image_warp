@@ -127,6 +127,14 @@ public class MainActivity extends AppCompatActivity {
                 mLineView2.draw2();
             }
         });
+        Button buttonPrevFrame = findViewById(R.id.buttonPrevFrame);
+        buttonPrevFrame.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                mLineView2.draw2();
+            }
+        });
     }
 
     @Override
