@@ -11,8 +11,8 @@ import android.view.View;
 import java.util.ArrayList;
 
 public class MyView extends View {
-    private static ArrayList<PointF> pointListA;
-    private static ArrayList<PointF> pointListB;
+    public static ArrayList<PointF> pointListA;
+    public static ArrayList<PointF> pointListB;
 
     // Default constructors
     public MyView(Context context, AttributeSet attrs, int defStyle) {

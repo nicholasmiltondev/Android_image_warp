@@ -2,12 +2,14 @@ package com.example.nicho.myapplication2;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static int RESULT_LOAD_IMAGE = 1;
 
+    // Variables to store screentouch coordinates.
     PointF pointA = new PointF(0, 0);
     PointF pointB = new PointF(0, 0);
     private float x;
@@ -30,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     private MyView mLineView;
     private MyView2 mLineView2;
+
+    public PixelFactory pxFact;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         mLineView.setPointB(pointB);
         mLineView.draw();
         mLineView2.draw2();
+        pxFact = new PixelFactory();
 
         mLineView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -131,10 +137,19 @@ public class MainActivity extends AppCompatActivity {
         buttonPrevFrame.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onClick(View arg0) {
-                mLineView2.draw2();
+            public void onClick(View v) {
+                Bitmap b = pxFact.warpBitmap();
+                ImageView imageView2 = findViewById(R.id.secondImage);
+                imageView2.setImageBitmap(b);
+                Log.v(TAG, "Line 144, imageview bitmap loaded");
+                //openActivity2();
             }
         });
+    }
+
+    public void openActivity2(){
+        Intent intent = new Intent(this, Activity2.class);
+            startActivity(intent);
     }
 
     @Override
@@ -158,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
             File img = new File(picturePath);
             imageView.setImageBitmap(BitmapFactory.decodeFile(img.getAbsolutePath()));
             imageView2.setImageBitmap(BitmapFactory.decodeFile(img.getAbsolutePath()));
+            pxFact.loadBitmap(BitmapFactory.decodeFile(img.getAbsolutePath()));
         }
 
     }
