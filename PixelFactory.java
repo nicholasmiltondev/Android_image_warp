@@ -2,7 +2,8 @@ package com.example.nicho.myapplication2;
 
 import android.graphics.Bitmap;
 import android.graphics.PointF;
-import android.util.Log;
+
+import java.util.ArrayList;
 
 // Class contains bitmap warping functions
 public class PixelFactory {
@@ -12,6 +13,7 @@ public class PixelFactory {
     public int[] finalPixels;
     int width;
     int height;
+    ArrayList<PointF> pointListE, pointListF, pointListA, pointListB;
 
     // Methods loads whole bitmap and sets width and height
     public void loadBitmap(Bitmap bitmap){
@@ -21,7 +23,12 @@ public class PixelFactory {
         bitmap.getPixels(pixels, 0, width, 0, 0,
                 width, height);
     }
-    public Bitmap warpBitmap() {
+
+    public Bitmap warpBitmap(ArrayList<PointF> a, ArrayList<PointF> b,ArrayList<PointF> e,ArrayList<PointF> f) {
+        pointListA = a;
+        pointListB = b;
+        pointListE = e;
+        pointListF = f;
         Bitmap warpedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         changePixels();
         warpedBitmap.setPixels(finalPixels, 0, width, 0, 0, width, height);
@@ -40,10 +47,9 @@ public class PixelFactory {
                 f.y = 0;
             if(f.y >= height)
                 f.y = height - 1;
-            int x = Math.round(f.x);
-            int y = Math.round(f.y);
+            int x = (int)Math.floor(f.x);
+            int y = (int)Math.floor(f.y);
             finalPixels[i] = pixels[y*width + x];
-            Log.v(TAG, "finalpixels " + i);
         }
     }
 
@@ -84,25 +90,24 @@ public class PixelFactory {
         float weightTotal = 0;
         PointF wDeltaTotal = new PointF(0, 0);
 
-        for(int i = 2; i < MyView2.pointListC.size(); i++) {
-            float dist = distanceFromPointToLine(destXF, destYF, MyView2.pointListC.get(i).x, MyView2.pointListC.get(i).y, MyView2.pointListD.get(i).x, MyView2.pointListD.get(i).y);
+        for(int i = 3; i < pointListE.size(); i++) {
+            float dist = distanceFromPointToLine(destXF, destYF, pointListE.get(i).x, pointListE.get(i).y, pointListF.get(i).x, pointListF.get(i).y);
             float w = findWeight(dist);
             weightTotal += w;
 
-            float fb = fractionalBisect(destXF, destYF, MyView2.pointListC.get(i).x, MyView2.pointListC.get(i).y, MyView2.pointListD.get(i).x, MyView2.pointListD.get(i).y);
-            PointF temp = sourcePointFromTheLine(MyView.pointListA.get(i).x, MyView.pointListA.get(i).y, MyView.pointListB.get(i).x, MyView.pointListB.get(i).y, fb, dist);
-             temp.x -= destXF;
+            float fb = fractionalBisect(destXF, destYF, pointListE.get(i).x, pointListE.get(i).y, pointListF.get(i).x, pointListF.get(i).y);
+            PointF temp = sourcePointFromTheLine(pointListA.get(i).x, pointListA.get(i).y, pointListB.get(i).x, pointListB.get(i).y, fb, dist);
+            temp.x -= destXF;
             temp.y -= destYF;
-
             temp.x = temp.x*w;
             temp.y = temp.y*w;
             wDeltaTotal.x += temp.x;
             wDeltaTotal.y += temp.y;
+            //Log.v(TAG, "Line 107: " + wDeltaTotal.x + " " + wDeltaTotal.y);
         }
         wDeltaTotal.x = wDeltaTotal.x/weightTotal + destXF;
         wDeltaTotal.y = wDeltaTotal.y/weightTotal + destYF;
 
-        //Log.v(TAG, "pixel at " + wDeltaTotal.x + " " + wDeltaTotal.y);
         return wDeltaTotal;
     }
 }

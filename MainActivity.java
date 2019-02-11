@@ -13,7 +13,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import java.io.File;
 
@@ -33,13 +35,22 @@ public class MainActivity extends AppCompatActivity {
 
     private MyView mLineView;
     private MyView2 mLineView2;
+    private bitmapHandler bh;
 
-    public PixelFactory pxFact;
+    LinearLayout ln;
+    public Bitmap[] transitionBitmaps;
+    private Bitmap start;
+    private Bitmap end;
+    private int bIndex;
+    private int numframes;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.v(TAG, "Debug started");
+        ln = (LinearLayout)findViewById(R.id.warpingLayout);
+        ln.setVisibility(View.INVISIBLE);
 
         mLineView = findViewById(R.id.lineView);
         mLineView2 = findViewById(R.id.lineView2);
@@ -47,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
         mLineView.setPointB(pointB);
         mLineView.draw();
         mLineView2.draw2();
-        pxFact = new PixelFactory();
 
         mLineView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -98,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 return true; // Need return type signals event handled.
             }
         });
-
+        // Button calls load picture menu for image 1.
         Button buttonLoadImage = findViewById(R.id.buttonLoadPicture);
         buttonLoadImage.setOnClickListener(new View.OnClickListener() {
 
@@ -109,10 +119,24 @@ public class MainActivity extends AppCompatActivity {
                         Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
-                startActivityForResult(i, RESULT_LOAD_IMAGE);
+                startActivityForResult(i, 1);
             }
         });
+        // Button calls load picture menu for image 2.
+        Button buttonLoadImage2 = findViewById(R.id.buttonLoadPicture2);
+        buttonLoadImage2.setOnClickListener(new View.OnClickListener() {
 
+            @Override
+            public void onClick(View arg0) {
+
+                Intent i = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                startActivityForResult(i, 2);
+            }
+        });
+        // Button clears lines.
         Button buttonClearLines = findViewById(R.id.buttonClearLines);
         buttonClearLines.setOnClickListener(new View.OnClickListener() {
 
@@ -133,30 +157,79 @@ public class MainActivity extends AppCompatActivity {
                 mLineView2.draw2();
             }
         });
+        // Button activates the warping by calling bitmapHandler
         Button buttonPrevFrame = findViewById(R.id.buttonPrevFrame);
         buttonPrevFrame.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Bitmap b = pxFact.warpBitmap();
-                ImageView imageView2 = findViewById(R.id.secondImage);
-                imageView2.setImageBitmap(b);
-                Log.v(TAG, "Line 144, imageview bitmap loaded");
-                //openActivity2();
+                EditText ed = findViewById(R.id.textNumberFrames);
+                String value = ed.getText().toString();
+                numframes = Integer.parseInt(value);
+                Log.v(TAG, "string value: " + numframes);
+                transitionBitmaps = new Bitmap[numframes];
+                transitionBitmaps[0] = start;
+                transitionBitmaps[numframes -1] = end;
+                bh = new bitmapHandler(numframes, start, end);
+                bh.createTransitionArrays();
+                transitionBitmaps[1] = bh.createBitmapTransition(start);
+                //bh.createTransitionArrays();
+                //transitionBitmaps[2] = bh.createBitmapTransition(start);
+
+                bIndex = 0;
+                ImageView imageView = findViewById(R.id.warpingImage);
+                imageView.setImageBitmap(transitionBitmaps[0]);
+
+                ln.setVisibility(View.VISIBLE);
+            }
+        });
+
+        //Button closes popup viewer.
+        Button buttonClose = findViewById(R.id.buttonClose);
+        buttonClose.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                ln = (LinearLayout)findViewById(R.id.warpingLayout);
+                ln.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        Button buttonNextImage = findViewById(R.id.buttonNextImage);
+        buttonNextImage.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                ImageView imageView = findViewById(R.id.warpingImage);
+                if(bIndex<numframes-1)
+                    ++bIndex;
+                imageView.setImageBitmap(transitionBitmaps[bIndex]);
+            }
+        });
+        Button buttonBackImage = findViewById(R.id.buttonBackImage);
+        buttonBackImage.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                ImageView imageView = findViewById(R.id.warpingImage);
+                if(bIndex>0)
+                    --bIndex;
+                imageView.setImageBitmap(transitionBitmaps[bIndex]);
             }
         });
     }
 
+    // Defunct method, need to delete.
     public void openActivity2(){
         Intent intent = new Intent(this, Activity2.class);
-            startActivity(intent);
+        startActivity(intent);
     }
-
+    // Methods loads bitmap to image view 1.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+        if (requestCode == 1 && resultCode == RESULT_OK && null != data) {
             Uri selectedImage = data.getData();
             String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
@@ -169,12 +242,27 @@ public class MainActivity extends AppCompatActivity {
             cursor.close();
 
             ImageView imageView = findViewById(R.id.firstImage);
-            ImageView imageView2 = findViewById(R.id.secondImage);
             File img = new File(picturePath);
-            imageView.setImageBitmap(BitmapFactory.decodeFile(img.getAbsolutePath()));
-            imageView2.setImageBitmap(BitmapFactory.decodeFile(img.getAbsolutePath()));
-            pxFact.loadBitmap(BitmapFactory.decodeFile(img.getAbsolutePath()));
+            start = BitmapFactory.decodeFile(img.getAbsolutePath());
+            imageView.setImageBitmap(start);
         }
 
+        if (requestCode == 2 && resultCode == RESULT_OK && null != data) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+            Cursor cursor = getContentResolver().query(selectedImage,
+                    filePathColumn, null, null, null);
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+
+            ImageView imageView2 = findViewById(R.id.secondImage);
+            File img = new File(picturePath);
+            end = BitmapFactory.decodeFile(img.getAbsolutePath());
+            imageView2.setImageBitmap(end);
+        }
     }
 }
